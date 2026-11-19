@@ -69,6 +69,20 @@ Search for messages including `CMD_RECOVERY_RESTART_WIFI`, `WifiScanner`, `WifiN
 
 If the Wi-Fi UI fails but `list-scan-results` contains fresh entries, distinguish display/network-selection issues from radio scanning. If Wi-Fi and Bluetooth fail together, investigate their shared subsystem without prematurely declaring a hardware fault.
 
+## 6. If Wi-Fi cannot initialize even after ADB enable
+
+On a recurring Pixel 8 Pro incident, `settings get global wifi_on` returned `1` while `cmd wifi status` still reported `Wifi is disabled`. Diagnostics showed repeated `CMD_STA_START_FAILURE` / `WifiNative Failure`. Wi-Fi toggles did not recover it.
+
+After saving diagnostics, **fully power off / force shutdown the phone and power it back on**, then recheck:
+
+```cmd
+adb shell cmd wifi status
+adb shell cmd wifi start-scan
+adb shell cmd wifi list-scan-results
+```
+
+A complete forced shutdown **restored Wi-Fi on that recurrence**, but a previous shutdown had not helped during an earlier phase. Do not treat this as a permanent fix or as proof of either hardware or software failure. If the fault keeps recurring, preserve logs for vendor support and test Bluetooth separately.
+
 ## Validation checklist
 
 - Networks are visible on the phone.
