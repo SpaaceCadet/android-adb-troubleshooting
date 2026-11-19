@@ -6,7 +6,7 @@ The examples document observed behavior, distinguish confirmed findings from hyp
 
 ## Incident reports
 
-- [Pixel 8 Pro — simultaneous Wi-Fi/Bluetooth malfunction (2026-11-19)](incidents/pixel-8-pro-wifi-bluetooth-2026-11-19.md): Wi-Fi enabled but no nearby networks shown in Android Settings; Bluetooth also malfunctioned. Recovered Wi-Fi discovery and connectivity with ADB, while the underlying trigger remains unconfirmed.
+- [Pixel 8 Pro — simultaneous Wi-Fi/Bluetooth malfunction (2026-11-19)](incidents/pixel-8-pro-wifi-bluetooth-2026-11-19.md): Wi-Fi enabled but no nearby networks shown in Android Settings; Bluetooth also malfunctioned. Recovered Wi-Fi discovery and connectivity with ADB; on recurrence Wi-Fi initialization failed and a forced complete shutdown restored operation. Root cause remains unconfirmed.
 
 ## Runbooks
 
