@@ -3,13 +3,13 @@
 **Date:** 2026-11-19  
 **Device:** Google Pixel 8 Pro  
 **Environment:** Windows PC, Android Platform Tools (ADB), USB debugging  
-**Outcome:** Wi-Fi networks became visible and connection succeeded after ADB-based recovery. Bluetooth recovery was **not independently verified**. Root cause remains **unconfirmed**.
+**Outcome:** Initial ADB-based recovery restored Wi-Fi scanning and connection, but the failure recurred. On the later recurrence, a complete forced shutdown followed by powering on restored Wi-Fi operation. Bluetooth recovery was **not independently verified**. Root cause remains **unconfirmed**.
 
 ## Impact and symptoms
 
 - Wi-Fi toggle could be enabled, but nearby networks were initially absent from the phone's Internet settings and the phone could not connect.
 - Bluetooth was also malfunctioning during the incident.
-- A forced restart / complete shutdown did not resolve the immediate symptom.
+- During the initial troubleshooting, a forced restart / complete shutdown did not resolve the immediate symptom. During the later recurrence, a complete forced shutdown **did** restore Wi-Fi. These are observations at different points in the incident, not a consistent permanent solution.
 - This was a recurrence of a prior wireless issue, during which Bluetooth HAL and coexistence-related messages had been observed.
 
 ## Investigation
@@ -92,6 +92,37 @@ adb shell cmd wifi status
 **Confirmed result:** Wi-Fi network visibility returned and the user reported that the ADB connection succeeded.
 
 **Not confirmed:** Whether Bluetooth recovered, whether the issue will recur, or whether any specific driver/firmware/hardware component was defective.
+
+## Recurrence: Wi-Fi fails to initialize (2026-11-19)
+
+After the earlier ADB recovery succeeded, Wi-Fi failed again when it was re-enabled. No nearby networks appeared.
+
+### Observations
+
+```text
+adb shell svc wifi enable          # accepted without error
+adb shell settings get global wifi_on
+1
+adb shell cmd wifi status
+Wifi is disabled
+Wifi scanning is only available when wifi is enabled
+```
+
+The requested setting was ON, but the operational Wi-Fi state remained disabled. On this unrooted Android device, `adb shell ip link show wlan0` returned `request send failed: Permission denied`; that result is an access restriction and does not prove that the interface was absent.
+
+The subsequent `dumpsys wifi` showed `Current wifi mode: DisabledState`, `NumActiveModeManagers: 0`, repeated `CMD_STA_START_FAILURE`, `WifiNative Failure`, recovery attempts, and `CMD_RECOVERY_DISABLE_WIFI`. The logcat contained Wi-Fi HAL/driver readiness and STA interface creation failures. Thus the recurrence was a **Wi-Fi startup/initialization failure**, not merely an empty scan result.
+
+### Recovery that worked this time
+
+The user performed a **forced complete shutdown**, then powered the phone back on. **Wi-Fi worked again afterward** (user-confirmed). Repeated Wi-Fi toggles / `svc wifi enable` had not resolved the failed initialization before shutdown.
+
+This supports a transient state that can clear across full power-off; it does **not** identify whether the root cause lies in Android, vendor firmware, driver, or hardware. Recovery duration and Bluetooth state after the shutdown were not verified.
+
+### What to check if it recurs again
+
+Capture `adb shell cmd wifi status`, `adb shell dumpsys wifi`, and a fresh `adb logcat` **before** forcing shutdown when possible. Compare Wi-Fi startup, `WifiNative`, vendor HAL and driver readiness messages, and separately verify Bluetooth after reboot. A forced shutdown is a recovery measure, not proof of a permanent fix.
+
+---
 
 ## Working hypothesis — not a proven root cause
 
